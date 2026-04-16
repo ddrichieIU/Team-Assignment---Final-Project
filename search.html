@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movie Vault | Search</title>
+    <link rel="stylesheet" href="CSS/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-wrap">
+        <a href="index.html" class="logo">Movie Vault</a>
+        <nav class="main-nav">
+          <a href="index.html">Home</a>
+          <a href="search.html" class="active">Search</a>
+          <a href="watchlist.html">Watchlist</a>
+          <a href="about.html">About</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container page-content">
+      <section class="section">
+        <div class="section-head">
+          <h1>Search Movies</h1>
+        </div>
+
+        <form id="searchForm" class="search-bar">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search by movie title..."
+            autocomplete="off"
+          />
+          <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+
+        <div class="filters-row">
+          <button
+            id="clearSearchBtn"
+            class="btn btn-outline small-btn"
+            type="button"
+          >
+            Clear
+          </button>
+        </div>
+
+        <div id="searchStatus" class="state-message">
+          Search for a movie to get started.
+        </div>
+        <div id="searchResultsGrid" class="movie-grid"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>Movie Vault</p>
+      </div>
+    </footer>
+
+    <script src="JS/config.example.js"></script>
+    <script src="JS/api.js"></script>
+    <script src="JS/firebase.js"></script>
+    <script src="JS/ui.js"></script>
+    <script src="JS/search.js"></script>
+  </body>
+</html>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movie Vault | Watchlist</title>
+    <link rel="stylesheet" href="CSS/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-wrap">
+        <a href="index.html" class="logo">Movie Vault</a>
+        <nav class="main-nav">
+          <a href="index.html">Home</a>
+          <a href="search.html">Search</a>
+          <a href="watchlist.html" class="active">Watchlist</a>
+          <a href="about.html">About</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container page-content">
+      <section class="section">
+        <div class="section-head">
+          <h1>Your Watchlist</h1>
+          <button id="clearWatchlistBtn" class="btn btn-outline" type="button">
+            Clear Watchlist
+          </button>
+        </div>
+
+        <div id="watchlistStatus" class="state-message">
+          Loading watchlist...
+        </div>
+        <div id="watchlistGrid" class="movie-grid"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>Movie Vault</p>
+      </div>
+    </footer>
+
+    <script src="JS/config.example.js"></script>
+    <script src="JS/api.js"></script>
+    <script src="JS/firebase.js"></script>
+    <script src="JS/ui.js"></script>
+    <script src="JS/watchlist.js"></script>
+  </body>
+</html>
