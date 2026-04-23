@@ -1,42 +1,30 @@
-document.addEventListener("DOMContentLoaded", async () => {
-  await WatchlistStore.init();
+const watchlistGrid = document.getElementById("watchlistGrid");
+const watchlistStatus = document.getElementById("watchlistStatus");
+const clearWatchlistBtn = document.getElementById("clearWatchlistBtn");
 
-  const grid = document.getElementById("watchlistGrid");
-  const status = document.getElementById("watchlistStatus");
-  const clearBtn = document.getElementById("clearWatchlistBtn");
-
-  async function loadWatchlist() {
-    const movies = await WatchlistStore.getAll();
-    grid.innerHTML = "";
-
-    if (!movies.length) {
-      status.textContent = "Your watchlist is empty.";
-      return;
-    }
-
-    status.textContent = `${movies.length} saved movie(s).`;
-
-    movies.forEach(movie => {
-      const card = createMovieCard(movie, {
-        saveButtonText: "Save",
-        removeButtonText: "Remove"
-      });
-
-      const toggleBtn = card.querySelector(".save-toggle-btn");
-      if (toggleBtn) {
-        toggleBtn.addEventListener("click", async () => {
-          setTimeout(loadWatchlist, 50);
-        });
-      }
-
-      grid.appendChild(card);
-    });
+function loadWatchlistPage() {
+  if (!watchlistGrid) {
+    return;
   }
 
-  clearBtn.addEventListener("click", async () => {
-    await WatchlistStore.clear();
-    loadWatchlist();
-  });
+  let watchlist = getWatchlist();
 
-  loadWatchlist();
-});
+  if (watchlist.length === 0) {
+    watchlistStatus.textContent = "Your watchlist is empty.";
+    watchlistGrid.innerHTML = "";
+    return;
+  }
+
+  watchlistStatus.textContent = "Saved movies:";
+  renderMovieCards(watchlist, "watchlistGrid", "remove");
+  connectRemoveButtons();
+}
+
+if (clearWatchlistBtn) {
+  clearWatchlistBtn.addEventListener("click", function () {
+    clearWatchlist();
+    loadWatchlistPage();
+  });
+}
+
+loadWatchlistPage();

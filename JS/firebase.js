@@ -1,95 +1,54 @@
-const LocalWatchlist = {
-  key: "movieVaultWatchlist",
+function getWatchlist() {
+  let movies = localStorage.getItem("movieVaultWatchlist");
 
-  getAll() {
-    return JSON.parse(localStorage.getItem(this.key)) || [];
-  },
+  if (movies === null) {
+    return [];
+  }
 
-  saveAll(movies) {
-    localStorage.setItem(this.key, JSON.stringify(movies));
-  },
+  return JSON.parse(movies);
+}
 
-  add(movie) {
-    const current = this.getAll();
-    const exists = current.some(item => item.id === movie.id);
-    if (!exists) {
-      current.push(movie);
-      this.saveAll(current);
+function saveMovieToWatchlist(movie) {
+  let watchlist = getWatchlist();
+  let alreadySaved = false;
+
+  for (let i = 0; i < watchlist.length; i++) {
+    if (String(watchlist[i].id) === String(movie.id)) {
+      alreadySaved = true;
     }
-  },
-
-  remove(movieId) {
-    const current = this.getAll().filter(item => item.id !== movieId);
-    this.saveAll(current);
-  },
-
-  clear() {
-    localStorage.removeItem(this.key);
-  },
-
-  isSaved(movieId) {
-    return this.getAll().some(item => item.id === movieId);
   }
-};
 
-const FirebaseWatchlist = {
-  initialized: false,
+  if (alreadySaved === false) {
+    watchlist.push(movie);
+    localStorage.setItem("movieVaultWatchlist", JSON.stringify(watchlist));
+  }
+}
 
-  async init() {
-    if (!MOVIE_VAULT_CONFIG.firebase.enabled) return false;
+function removeMovieFromWatchlist(id) {
+  let watchlist = getWatchlist();
+  let updatedWatchlist = [];
 
-    if (!window.firebase) {
-      console.warn("Firebase SDK not loaded. Falling back to localStorage.");
-      return false;
+  for (let i = 0; i < watchlist.length; i++) {
+    if (String(watchlist[i].id) !== String(id)) {
+      updatedWatchlist.push(watchlist[i]);
     }
-
-    this.initialized = true;
-    return true;
-  },
-
-  async getAll() {
-    return LocalWatchlist.getAll();
-  },
-
-  async add(movie) {
-    LocalWatchlist.add(movie);
-  },
-
-  async remove(movieId) {
-    LocalWatchlist.remove(movieId);
-  },
-
-  async clear() {
-    LocalWatchlist.clear();
-  },
-
-  async isSaved(movieId) {
-    return LocalWatchlist.isSaved(movieId);
   }
-};
 
-const WatchlistStore = {
-  async init() {
-    return FirebaseWatchlist.init();
-  },
+  localStorage.setItem("movieVaultWatchlist", JSON.stringify(updatedWatchlist));
+}
 
-  async getAll() {
-    return FirebaseWatchlist.getAll();
-  },
+function clearWatchlist() {
+  localStorage.removeItem("movieVaultWatchlist");
+}
 
-  async add(movie) {
-    return FirebaseWatchlist.add(movie);
-  },
+function isMovieInWatchlist(id) {
+  let watchlist = getWatchlist();
 
-  async remove(movieId) {
-    return FirebaseWatchlist.remove(movieId);
-  },
-
-  async clear() {
-    return FirebaseWatchlist.clear();
-  },
-
-  async isSaved(movieId) {
-    return FirebaseWatchlist.isSaved(movieId);
+  for (let i = 0; i < watchlist.length; i++) {
+    if (String(watchlist[i].id) === String(id)) {
+      return true;
+    }
   }
-};
+
+  return false;
+}

@@ -1,56 +1,48 @@
-document.addEventListener("DOMContentLoaded", async () => {
-  await WatchlistStore.init();
+const searchForm = document.getElementById("searchForm");
+const searchInput = document.getElementById("searchInput");
+const searchStatus = document.getElementById("searchStatus");
+const searchResultsGrid = document.getElementById("searchResultsGrid");
+const clearSearchBtn = document.getElementById("clearSearchBtn");
 
-  const form = document.getElementById("searchForm");
-  const input = document.getElementById("searchInput");
-  const grid = document.getElementById("searchResultsGrid");
-  const status = document.getElementById("searchStatus");
-  const clearBtn = document.getElementById("clearSearchBtn");
+async function searchForMovies() {
+  const title = searchInput.value.trim();
 
-  async function runSearch(query) {
-    if (!query.trim()) {
-      status.textContent = "Type a movie title to search.";
-      grid.innerHTML = "";
+  if (title === "") {
+    searchStatus.textContent = "Please enter a movie title.";
+    searchResultsGrid.innerHTML = "";
+    return;
+  }
+
+  searchStatus.textContent = "Loading movies...";
+  searchResultsGrid.innerHTML = "";
+
+  try {
+    const movies = await searchMoviesByTitle(title);
+
+    if (movies.length === 0) {
+      searchStatus.textContent = 'No movies found for "' + title + '".';
       return;
     }
 
-    status.textContent = "Searching...";
-    grid.innerHTML = "";
-
-    try {
-      const data = await TMDB.searchMovies(query);
-      const movies = data.results || [];
-
-      if (!movies.length) {
-        status.textContent = "No results found.";
-        return;
-      }
-
-      status.textContent = `${movies.length} result(s) found.`;
-      renderMovieGrid(grid, movies, {
-        saveButtonText: "Save",
-        removeButtonText: "Remove"
-      });
-    } catch (error) {
-      status.textContent = "Search failed.";
-      console.error(error);
-    }
+    searchStatus.textContent = movies.length + " movie(s) found.";
+    renderMovieCards(movies, "searchResultsGrid", "save");
+    connectSaveButtons();
+  } catch (error) {
+    searchStatus.textContent = "Something went wrong loading movies.";
   }
+}
 
-  form.addEventListener("submit", event => {
+if (searchForm) {
+  searchForm.addEventListener("submit", function (event) {
     event.preventDefault();
-    runSearch(input.value);
+    searchForMovies();
   });
+}
 
-  clearBtn.addEventListener("click", () => {
-    input.value = "";
-    grid.innerHTML = "";
-    status.textContent = "Search for a movie to get started.";
+if (clearSearchBtn) {
+  clearSearchBtn.addEventListener("click", function () {
+    searchInput.value = "";
+    searchStatus.textContent = "Search for a movie to get started.";
+    searchResultsGrid.innerHTML = "";
   });
-
-  const queryParam = getQueryParam("query");
-  if (queryParam) {
-    input.value = queryParam;
-    runSearch(queryParam);
-  }
-});
+}

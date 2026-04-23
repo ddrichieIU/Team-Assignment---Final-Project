@@ -1,72 +1,74 @@
-document.addEventListener("DOMContentLoaded", async () => {
-  await WatchlistStore.init();
+const detailsPoster = document.getElementById("detailsPoster");
+const detailsTagline = document.getElementById("detailsTagline");
+const detailsTitle = document.getElementById("detailsTitle");
+const detailsMeta = document.getElementById("detailsMeta");
+const detailsOverview = document.getElementById("detailsOverview");
+const detailsGenres = document.getElementById("detailsGenres");
+const detailsFacts = document.getElementById("detailsFacts");
+const saveMovieBtn = document.getElementById("saveMovieBtn");
+const detailsError = document.getElementById("detailsError");
+const detailsHero = document.getElementById("detailsHero");
 
-  const movieId = getQueryParam("id");
-  const titleEl = document.getElementById("detailsTitle");
-  const taglineEl = document.getElementById("detailsTagline");
-  const metaEl = document.getElementById("detailsMeta");
-  const overviewEl = document.getElementById("detailsOverview");
-  const genresEl = document.getElementById("detailsGenres");
-  const factsEl = document.getElementById("detailsFacts");
-  const posterEl = document.getElementById("detailsPoster");
-  const heroBackdrop = document.querySelector(".details-backdrop");
-  const saveBtn = document.getElementById("saveMovieBtn");
-  const errorEl = document.getElementById("detailsError");
+function getMovieIdFromUrl() {
+  let query = window.location.search.substring(1);
+  let parts = query.split("&");
 
-  if (!movieId) {
-    errorEl.classList.remove("hidden");
-    titleEl.textContent = "Movie not found.";
+  for (let i = 0; i < parts.length; i++) {
+    let pair = parts[i].split("=");
+    if (pair[0] === "id") {
+      return pair[1];
+    }
+  }
+
+  return null;
+}
+
+async function loadDetailsPage() {
+  if (!detailsTitle) {
+    return;
+  }
+
+  const movieId = getMovieIdFromUrl();
+
+  if (movieId === null) {
+    detailsError.classList.remove("hidden");
     return;
   }
 
   try {
-    const movie = await TMDB.getMovieDetails(movieId);
+    const movie = await getMovieDetailsById(movieId);
 
-    document.title = `Movie Vault | ${movie.title}`;
-    titleEl.textContent = movie.title;
-    taglineEl.textContent = movie.tagline || "Movie Details";
-    overviewEl.textContent = movie.overview || "No overview available.";
+    detailsPoster.innerHTML =
+      '<img src="' + getPosterUrl(movie.poster_path) + '" alt="' + cleanText(movie.title) + '">';
 
-    posterEl.innerHTML = `
-      <img src="${TMDB.getPosterUrl(movie.poster_path)}" alt="${movie.title}" />
-    `;
+    detailsTagline.textContent = movie.tagline || "Movie Details";
+    detailsTitle.textContent = movie.title;
+    detailsOverview.textContent = movie.overview || "No description available.";
 
-    const backdrop = TMDB.getBackdropUrl(movie.backdrop_path);
-    if (backdrop) {
-      heroBackdrop.style.backgroundImage = `url('${backdrop}')`;
+    detailsMeta.innerHTML =
+      '<span class="meta-chip">Rating: ' + movie.vote_average + '</span>' +
+      '<span class="meta-chip">Release: ' + movie.release_date + '</span>' +
+      '<span class="meta-chip">Runtime: ' + movie.runtime + ' min</span>';
+
+    detailsGenres.innerHTML = "";
+    for (let i = 0; i < movie.genres.length; i++) {
+      detailsGenres.innerHTML += '<span class="tag">' + movie.genres[i].name + '</span>';
     }
 
-    metaEl.innerHTML = `
-      <span class="meta-chip">${formatYear(movie.release_date)}</span>
-      <span class="meta-chip">${formatRating(movie.vote_average)}</span>
-      <span class="meta-chip">${movie.runtime ? `${movie.runtime} min` : "Runtime N/A"}</span>
-    `;
+    detailsFacts.innerHTML =
+      '<li>Status: ' + movie.status + '</li>' +
+      '<li>Original Language: ' + movie.original_language + '</li>' +
+      '<li>Popularity: ' + movie.popularity + '</li>';
 
-    genresEl.innerHTML = "";
-    (movie.genres || []).forEach(genre => {
-      const tag = document.createElement("span");
-      tag.className = "tag";
-      tag.textContent = genre.name;
-      genresEl.appendChild(tag);
-    });
+    if (movie.backdrop_path) {
+      detailsHero.style.background =
+        'linear-gradient(rgba(3, 7, 13, 0.7), rgba(3, 7, 13, 0.95)), url("https://image.tmdb.org/t/p/original' +
+        movie.backdrop_path +
+        '") center/cover no-repeat';
+    }
 
-    factsEl.innerHTML = `
-      <li><strong>Release Date:</strong> ${movie.release_date || "N/A"}</li>
-      <li><strong>Original Language:</strong> ${movie.original_language?.toUpperCase() || "N/A"}</li>
-      <li><strong>Vote Count:</strong> ${movie.vote_count ?? "N/A"}</li>
-      <li><strong>Status:</strong> ${movie.status || "N/A"}</li>
-      <li><strong>Popularity:</strong> ${movie.popularity ?? "N/A"}</li>
-    `;
-
-    const updateButton = async () => {
-      const saved = await WatchlistStore.isSaved(movie.id);
-      saveBtn.textContent = saved ? "Remove from Watchlist" : "Save to Watchlist";
-    };
-
-    await updateButton();
-
-    saveBtn.addEventListener("click", async () => {
-      const movieToSave = {
+    saveMovieBtn.addEventListener("click", function () {
+      const simpleMovie = {
         id: movie.id,
         title: movie.title,
         poster_path: movie.poster_path,
@@ -75,19 +77,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         overview: movie.overview
       };
 
-      const saved = await WatchlistStore.isSaved(movie.id);
-
-      if (saved) {
-        await WatchlistStore.remove(movie.id);
-      } else {
-        await WatchlistStore.add(movieToSave);
-      }
-
-      await updateButton();
+      saveMovieToWatchlist(simpleMovie);
+      alert("Movie saved to watchlist.");
     });
   } catch (error) {
-    console.error(error);
-    errorEl.classList.remove("hidden");
-    titleEl.textContent = "Movie not found.";
+    detailsError.classList.remove("hidden");
   }
-});
+}
+
+loadDetailsPage();
