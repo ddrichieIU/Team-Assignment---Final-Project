@@ -1,54 +1,67 @@
-function getWatchlist() {
-  let movies = localStorage.getItem("movieVaultWatchlist");
+const firebaseConfig = {
+  apiKey: "PASTE_YOURS_HERE",
+  authDomain: "PASTE_YOURS_HERE",
+  databaseURL: "PASTE_YOURS_HERE",
+  projectId: "PASTE_YOURS_HERE",
+  storageBucket: "PASTE_YOURS_HERE",
+  messagingSenderId: "PASTE_YOURS_HERE",
+  appId: "PASTE_YOURS_HERE"
+};
 
-  if (movies === null) {
-    return [];
+firebase.initializeApp(firebaseConfig);
+
+const database = firebase.database();
+
+function getUserId() {
+  let userId = localStorage.getItem("movieVaultUserId");
+
+  if (userId === null) {
+    userId = "user_" + Date.now();
+    localStorage.setItem("movieVaultUserId", userId);
   }
 
-  return JSON.parse(movies);
+  return userId;
+}
+
+function getWatchlist(callback) {
+  const userId = getUserId();
+
+  database.ref("watchlists/" + userId).once("value", function(snapshot) {
+    const data = snapshot.val();
+
+    if (data === null) {
+      callback([]);
+      return;
+    }
+
+    const movies = [];
+
+    for (let id in data) {
+      movies.push(data[id]);
+    }
+
+    callback(movies);
+  });
 }
 
 function saveMovieToWatchlist(movie) {
-  let watchlist = getWatchlist();
-  let alreadySaved = false;
+  const userId = getUserId();
 
-  for (let i = 0; i < watchlist.length; i++) {
-    if (String(watchlist[i].id) === String(movie.id)) {
-      alreadySaved = true;
-    }
-  }
-
-  if (alreadySaved === false) {
-    watchlist.push(movie);
-    localStorage.setItem("movieVaultWatchlist", JSON.stringify(watchlist));
-  }
+  database.ref("watchlists/" + userId + "/" + movie.id).set(movie);
 }
 
 function removeMovieFromWatchlist(id) {
-  let watchlist = getWatchlist();
-  let updatedWatchlist = [];
+  const userId = getUserId();
 
-  for (let i = 0; i < watchlist.length; i++) {
-    if (String(watchlist[i].id) !== String(id)) {
-      updatedWatchlist.push(watchlist[i]);
-    }
-  }
-
-  localStorage.setItem("movieVaultWatchlist", JSON.stringify(updatedWatchlist));
+  database.ref("watchlists/" + userId + "/" + id).remove();
 }
 
-function clearWatchlist() {
-  localStorage.removeItem("movieVaultWatchlist");
-}
+function clearWatchlist(callback) {
+  const userId = getUserId();
 
-function isMovieInWatchlist(id) {
-  let watchlist = getWatchlist();
-
-  for (let i = 0; i < watchlist.length; i++) {
-    if (String(watchlist[i].id) === String(id)) {
-      return true;
+  database.ref("watchlists/" + userId).remove(function() {
+    if (callback) {
+      callback();
     }
-  }
-
-  return false;
+  });
 }
