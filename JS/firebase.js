@@ -1,11 +1,11 @@
 const firebaseConfig = {
-  apiKey: "PASTE_YOURS_HERE",
-  authDomain: "PASTE_YOURS_HERE",
-  databaseURL: "PASTE_YOURS_HERE",
-  projectId: "PASTE_YOURS_HERE",
-  storageBucket: "PASTE_YOURS_HERE",
-  messagingSenderId: "PASTE_YOURS_HERE",
-  appId: "PASTE_YOURS_HERE"
+  apiKey: "AIzaSyA1234jX4Ar0ak0NvDimt0wPSX5eAWxwLs",
+  authDomain: "teamprojectfinal-7d25d.firebaseapp.com",
+  projectId: "teamprojectfinal-7d25d",
+  storageBucket: "teamprojectfinal-7d25d.firebasestorage.app",
+  messagingSenderId: "994082332296",
+  appId: "1:994082332296:web:5280735b5d7fbca662c93d",
+  measurementId: "G-J9TNL2J28T"
 };
 
 firebase.initializeApp(firebaseConfig);
